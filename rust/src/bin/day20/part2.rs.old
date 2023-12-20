@@ -1,0 +1,206 @@
+use std::collections::{HashMap, HashSet};
+
+use crate::{Module, Pulse};
+
+pub fn solution(modules: HashMap<String, Module>) -> usize {
+    
+    let mut modules: HashMap<String, CompressedModule> = HashMap::from_iter(modules.into_iter().map(|(name, module)| {
+        (name.clone(), match module {
+            Module::Broadcast(out) => {
+                CompressedModule {
+                    inp: HashSet::new(),
+                    out: map_to_pipe(name, out),
+                    op: OpType::Broadcast
+                }
+            },
+            Module::FlipFlop(state, out) => {
+                CompressedModule {
+                    inp: HashSet::new(),
+                    out: map_to_pipe(name, out),
+                    op: OpType::FlipFlop(state)
+                }
+            },
+            Module::Conjunction(state, out) => {
+                CompressedModule {
+                    inp: HashSet::new(),
+                    out: map_to_pipe(name, out),
+                    op: OpType::Conjunction(state)
+                }
+            },
+            Module::Untyped => {
+                CompressedModule {
+                    inp: HashSet::new(),
+                    out: HashMap::new(),
+                    op: OpType::Untyped(name)
+                }
+            },
+        })
+    }));
+
+    
+    for (name, module) in modules.clone() {
+
+        for (_, val) in module.out {
+            if let OpType::Pipe(str) = &val.op {
+                let h = modules.get_mut(str).unwrap();
+                h.inp.insert(name.clone());
+            }
+        }
+
+    }
+
+    for module in modules.values_mut() {
+        if let OpType::Conjunction(inp) = &module.op {
+            if inp.len() == 1 {
+                module.op = OpType::Not
+            }
+        }
+    }
+
+    
+
+    loop {
+        let mut to_compress = vec![];
+        for (name, module) in &modules {
+
+            //println!("{}, {:?}", module.inp.len(), module.inp);
+            if module.inp.len() == 1 {
+                to_compress.push(name.clone());
+            }
+        }
+        println!("{:?}", to_compress);
+        if to_compress.is_empty() {
+            break;
+        }
+        print_modules(&modules);
+        for compress in to_compress {
+            let tmp = modules.remove(&compress).unwrap();
+
+            let new_dest = tmp.inp.iter().next().unwrap().clone();
+            change_pointer(&compress, new_dest.clone(), &tmp, &mut modules);
+
+            modules.get_mut(&new_dest).unwrap().change_out(&compress, tmp);
+
+        }
+        println!("-------------------");
+        print_modules(&modules);
+    }
+
+
+    0
+}
+
+fn print_modules(modules: &HashMap<String, CompressedModule>) {
+    for (name, module) in modules {
+        let prefix = match module.op {
+            OpType::Broadcast => "",
+            OpType::FlipFlop(_) => "&",
+            OpType::Conjunction(_) => "%",
+            OpType::Untyped(_) => "",
+            OpType::Pipe(_) => unreachable!(),
+            OpType::Not => "!"
+        };
+        println!("{prefix}{name} -> {}", module.parse_out())
+    }
+}
+fn change_pointer(prev: &str, point_to: String, module: &CompressedModule, modules: &mut HashMap<String, CompressedModule>) {
+    for to in module.out.values() {
+        if let OpType::Pipe(str) = &to.op {
+            let change = modules.get_mut(str).unwrap();
+            change.inp.remove(prev);
+            change.inp.insert(point_to.clone());
+        } else {
+            change_pointer(prev, point_to.clone(), to, modules);
+        }
+    }
+}
+fn map_to_pipe(inp: String, out: Vec<String>) -> HashMap<String, CompressedModule> {
+    HashMap::from_iter(
+        out.into_iter().map(|a| {
+            (a.clone(), CompressedModule {
+                inp: HashSet::from([inp.clone()]),
+                out: HashMap::new(),
+                op: OpType::Pipe(a),
+            })
+        })
+    )
+}
+#[derive(Clone, Debug)]
+struct CompressedModule {
+    inp: HashSet<String>,
+    out: HashMap<String, CompressedModule>,
+    op: OpType
+}
+
+impl CompressedModule {
+    pub fn change_out(&mut self, name: &str, val: CompressedModule) {
+        self.inner_change_out(name, val);
+    }
+
+    fn inner_change_out(&mut self, name: &str, val: CompressedModule) -> Option<CompressedModule> {
+        if let Some(module) = self.out.get_mut(name) {
+            *module = val;
+            return None;
+        }
+        
+        let mut val = val;
+        for module in self.out.values_mut() {
+            if let Some(ret) = module.inner_change_out(name, val) {
+                val = ret;
+            } else {
+                return None;
+            }
+        }
+
+        Some(val)
+    }
+
+    pub fn parse_self(&self) -> String {
+        match &self.op {
+            OpType::Broadcast => {
+                "(".to_string()
+                + &self.parse_out()
+                + ")"
+            },
+            OpType::FlipFlop(_) => {
+                "%(".to_string() 
+                + &self.parse_out()
+                + ")"
+            },
+            OpType::Conjunction(_) => {
+                "&(".to_string() 
+                + &self.parse_out()
+                + ")"
+            },
+            OpType::Untyped(name) => name.clone(),
+            OpType::Pipe(str) => str.to_string(),
+            OpType::Not => {
+                "!".to_string()
+                + &self.parse_out()
+            }
+        }
+    }
+    pub fn parse_out(&self) -> String {
+        let mut out = "".to_string();
+        for module in self.out.values() {
+            out = out + &module.parse_self() + ", ";
+        }
+
+        if out.is_empty() {
+            out
+        } else {
+            out[0..out.len()-2].to_string()
+        }
+    }
+}
+#[derive(Clone, Debug)]
+enum OpType {
+    Broadcast,
+    FlipFlop(bool),
+    Conjunction(HashMap<String, Pulse>),
+    Untyped(String),
+    Pipe(String),
+    Not
+}
+
+

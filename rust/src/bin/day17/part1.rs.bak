@@ -1,0 +1,149 @@
+use std::collections::VecDeque;
+
+pub fn solution(inp: &Vec<Vec<i32>>) -> i32 {
+
+    let mut grid = vec![vec![-1; inp[0].len()]; inp.len()];
+
+    let end = (grid[0].len() - 1, grid.len()-1);
+    let start = (0, 0);
+    
+    grid[start.1][start.0] = 0;
+
+    let mut to_process = VecDeque::new();
+    
+    to_process.push_back(
+        Process {
+            x: start.0 as i32, 
+            y: start.1 as i32, 
+            dir: Dir::None, 
+            consecutive: 0
+        }
+    );
+
+    while let Some(point) = to_process.pop_front() {
+        let val = grid[point.y as usize][point.x as usize];
+        for dir in point.dir.get_other_dirs() {
+            let offset = dir.get_offset();
+            //println!("{:?}, {:?}", dir, offset);
+            let new_x = point.x + offset.0;
+            let new_y = point.y + offset.1;
+
+            if new_x < 0 || new_y < 0 || new_x >= inp[0].len() as i32 || new_y >= inp.len() as i32 {
+                continue;
+            }
+
+            //println!("{:?}, ({}, {})", dir, new_x, new_y);
+            let mut consecutive = 0;
+            if dir == point.dir {
+                consecutive = point.consecutive + 1;
+                println!("{:?}, {}, {}", dir, consecutive, point.consecutive);
+                if consecutive >= 2 {
+                    continue;
+                }
+            }
+
+            let weight = inp[new_y as usize][new_x as usize];
+
+            let new_val = val+weight;
+
+            let old_val = grid[new_y as usize][new_x as usize];
+
+            if old_val != -1 && old_val <= new_val {
+                //println!("{}, {}", old_val, new_val);
+                continue;
+            }
+
+            grid[new_y as usize][new_x as usize] = new_val;
+            to_process.push_back(
+                Process {
+                    x: new_x,
+                    y: new_y,
+                    dir,
+                    consecutive
+                }
+            );
+        }
+    }
+    print_grid(&grid);
+    grid[end.1][end.0]
+}
+
+#[allow(unused)]
+fn print_grid(grid: &Vec<Vec<i32>>) {
+    for line in grid {
+        let str = line.iter().map(|num| {
+            format!("{:0>3} ", num)
+        }).collect::<String>();
+        println!("{str}");
+    }
+
+    let mut point = (grid[0].len() - 1, grid.len());
+
+    let mut new_grid = vec![vec!['.'; grid[0].len()]; grid.len()];
+
+    new_grid[grid.len() - 1][grid[0].len()-1] = '#';
+    let around = [(1,0), (0,1), (-1,0), (0,-1)];
+    while point != (0,0) {
+        let mut min = -1;
+        let mut new_point = (0, 0);
+        for offset in around {
+            let x = point.0 as i32 - offset.0;
+            let y = point.1 as i32 - offset.1;
+            if x < 0 || y < 0 || x >= grid[0].len() as i32 || y >= grid.len() as i32 {
+                continue; 
+            }
+            
+            if min == -1 || grid[y as usize][x as usize] < min {
+                min = grid[y as usize][x as usize];
+                new_point = (x as usize, y as usize);
+            }
+        }
+        new_grid[new_point.1][new_point.0] = '#';
+        point = new_point;
+    }
+
+    for line in new_grid {
+        let line = line.into_iter().collect::<String>();
+        println!("{line}");
+    }
+}
+#[derive(Debug, Clone)]
+struct Process {
+    pub x: i32,
+    pub y: i32,
+    pub dir: Dir,
+    pub consecutive: i32
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Dir {
+    None,
+    Right,
+    Down,
+    Left,
+    Up,
+}
+
+impl Dir {
+    const DIRS: [Dir; 4] = [Dir::Right, Dir::Down, Dir::Left, Dir::Up];
+    pub fn get_other_dirs(self) -> Vec<Self> {
+        let ignore = match self {
+            Dir::None => Dir::None,
+            Dir::Right => Dir::Left,
+            Dir::Down => Dir::Up,
+            Dir::Left => Dir::Right,
+            Dir::Up => Dir::Down,
+        };
+        Self::DIRS.into_iter().filter(|a| *a != ignore).collect()
+    }
+
+    pub fn get_offset(&self) -> (i32, i32) {
+        match self {
+            Dir::None => (0,0),
+            Dir::Right => (1,0),
+            Dir::Down => (0,1),
+            Dir::Left => (-1,0),
+            Dir::Up => (0,-1),
+        }
+    }
+}

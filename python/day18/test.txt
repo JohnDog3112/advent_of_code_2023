@@ -1,0 +1,38 @@
+S#####.######.....
+#OOOO#.#OOOO#.....
+#OOOO#.#OOOO#.....
+#OOOO#.#OOOO#.....
+#OOOO#.#OOOO#.....
+#O####.#OOOO######
+#O#....#OOOOOOOOO#
+#O#....#OOOOOOOOO#
+#O######OOOOOOOOO#
+#OOOOOOOOOOOOOOOO#
+#OOOOOOOOOOOOOOOO#
+#OOOOOOOOOOOOOOOO#
+#OOOOOOOOOOOOOOOO#
+#OOOOOOOOOOOOOOOO#
+#OOOOOOOOOOOOOOOO#
+##################
+part 1: 248
+[('D', True, 5, (0, 5))]
+[('D', True, 5, (0, 5))]
+---------------
+[('D', True, 5, (0, 5)), ('D', True, 2, (5, 8))]
+[('D', True, 5, (0, 5)), ('D', True, 2, (5, 8))]
+---------------
+[('D', True, 5, (0, 5)), ('D', True, 2, (5, 8)), ('U', False, 7, (0, 8))]
+[('D', True, 5, (0, 5)), ('D', True, 2, (5, 8)), ('U', False, 7, (0, 8))]
+---------------
+[('D', True, 5, (0, 5)), ('D', True, 2, (5, 8)), ('U', False, 7, (0, 8)), ('D', True, 12, (0, 5))]
+hi
+[('D', True, 5, (0, 5)), ('D', True, 2, (5, 8)), ('U', False, 7, (0, 8)), ('D', True, 12, (0, 5))]
+---------------
+[('D', True, 5, (0, 5)), ('D', True, 2, (5, 8)), ('U', False, 7, (0, 8)), ('D', True, 12, (0, 5)), ('D', True, 17, (5, 15))]
+[('D', True, 5, (0, 5)), ('D', True, 2, (5, 8)), ('U', False, 7, (0, 8)), ('D', True, 12, (0, 5)), ('D', True, 17, (5, 15))]
+---------------
+[('D', True, 5, (0, 5)), ('D', True, 2, (5, 8)), ('U', False, 7, (0, 8)), ('D', True, 12, (0, 5)), ('D', True, 17, (5, 15)), ('U', False, 0, (0, 15))]
+hi
+[('D', True, 5, (0, 5)), ('D', True, 2, (5, 8)), ('U', False, 7, (0, 8)), ('D', True, 12, (0, 5)), ('D', True, 17, (5, 15)), ('U', False, 0, (0, 15))]
+---------------
+[('D', True, 5, (0, 5)), ('D', True, 2, (5, 8)), ('U', False, 7, (0, 8)), ('D', True, 12, (0, 5)), ('D', True, 17, (5, 15)), ('U', False, 0, (0, 15))]
