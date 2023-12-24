@@ -77,7 +77,7 @@ fn search_connections(connections: &Connections, traversed: &mut HashSet<(usize,
 
     let mut found_valid = false;
     let mut max = 0;
-    for (key, (pos, dist)) in connection {
+    for (pos, dist) in connection.values() {
         if traversed.contains(pos) {
             continue;
         }
