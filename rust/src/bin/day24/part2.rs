@@ -5,6 +5,7 @@ use crate::HailStone;
 
 //hints used: 
 // -- "Look at Parallel Lines"
+// -- referenced https://pastebin.com/VrYHgxKx for last part
 //Probably would not have been able to solve this without them
 pub fn solution(inp: &[HailStone]) -> i64 {
 
